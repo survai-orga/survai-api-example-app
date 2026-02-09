@@ -1,0 +1,41 @@
+{
+  "name": "survai-api-example",
+  "version": "1.0.0",
+  "description": "Example application demonstrating complete SurvAI API workflow",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "tracking": "tsx src/tracking-survey.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "webhook": "tsx src/webhook-server/server.ts",
+    "test": "vitest",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist data/*.json logs/*.log"
+  },
+  "keywords": [
+    "survai",
+    "api",
+    "example",
+    "survey",
+    "evaluation",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "express": "^4.19.0",
+    "dotenv": "^16.4.0",
+    "csv-writer": "^1.6.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.4.0",
+    "tsx": "^4.10.0",
+    "vitest": "^1.6.0"
+  }
+}

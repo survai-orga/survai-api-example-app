@@ -1,0 +1,337 @@
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import { CONFIG } from '../config.js';
+
+export interface Survey {
+  id: string;
+  name: string;
+  comment?: string;
+  created: string;
+}
+
+export interface Question {
+  id: string;
+  surveyId: string;
+  question_text: string;
+  question_name: string;
+  additional_instruction?: string;
+  code_frame?: CodeFrameNode[];
+}
+
+export interface CodeFrameNode {
+  id: string;
+  name: string;
+  tier: number;
+  order: number;
+  children?: CodeFrameNode[];
+}
+
+export interface Answer {
+  customer_id: string;
+  answer_text: string;
+}
+
+export interface Evaluation {
+  id: string;
+  questionId: string;
+  name: string;
+  totalAnswers: number;
+  processedAnswers: number;
+  is_completed: boolean;
+  started?: string;
+  completed?: string;
+}
+
+export interface EvaluatedAnswer {
+  id: string;
+  answerId: string;
+  answer_text: string;
+  codings: Coding[];
+}
+
+export interface Coding {
+  code_path: string;
+  textbits: string[];
+  tier?: number;
+}
+
+export interface Webhook {
+  id: string;
+  url: string;
+  name: string;
+  events: string[];
+  secret: string;
+}
+
+/**
+ * SurvAI API Client
+ * Handles all API communication with proper authentication and error handling
+ */
+export class SurvAIClient {
+  private client: AxiosInstance;
+
+  constructor(apiKey?: string) {
+    this.client = axios.create({
+      baseURL: CONFIG.api.baseUrl,
+      timeout: CONFIG.api.timeout,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(apiKey || CONFIG.api.apiKey ? { 'X-API-Key': apiKey || CONFIG.api.apiKey } : {}),
+        ...(CONFIG.api.firebaseToken ? { 'Authorization': `Bearer ${CONFIG.api.firebaseToken}` } : {})
+      }
+    });
+
+    // Request interceptor for logging
+    this.client.interceptors.request.use(request => {
+      console.log(`→ ${request.method?.toUpperCase()} ${request.url}`);
+      if (request.data && Object.keys(request.data).length > 0) {
+        const truncatedData = JSON.stringify(request.data).substring(0, 200);
+        console.log(`  Body: ${truncatedData}${truncatedData.length >= 200 ? '...' : ''}`);
+      }
+      return request;
+    });
+
+    // Response interceptor for logging and error handling
+    this.client.interceptors.response.use(
+      response => {
+        console.log(`← ${response.status} ${response.config.url}`);
+        return response;
+      },
+      (error: AxiosError) => {
+        const method = error.config?.method?.toUpperCase() || 'REQUEST';
+        const url = error.config?.url || 'unknown';
+        console.error(`✗ ${method} ${url}`);
+
+        if (error.response) {
+          console.error(`  Status: ${error.response.status}`);
+          console.error(`  Error: ${JSON.stringify(error.response.data)}`);
+        } else if (error.request) {
+          console.error(`  No response received`);
+        } else {
+          console.error(`  Error: ${error.message}`);
+        }
+
+        throw error;
+      }
+    );
+  }
+
+  // ============================================================================
+  // SURVEY OPERATIONS
+  // ============================================================================
+
+  async createSurvey(data: { name: string; comment?: string }): Promise<{ survey: Survey }> {
+    const response = await this.client.post('/api/v1/surveys', data);
+    return response.data;
+  }
+
+  async importSurvey(surveyData: {
+    name: string;
+    comment?: string;
+    questions: Array<{
+      question_text: string;
+      question_name?: string;
+      additional_instruction?: string;
+      notes?: string;
+      answers: Array<{
+        customer_id: string;
+        answer_text: string;
+      }>;
+    }>;
+  }): Promise<{ surveyId: string; message: string }> {
+    const response = await this.client.post('/api/v1/surveys/import', { surveyData });
+    return response.data;
+  }
+
+  async getSurvey(surveyId: string): Promise<{ survey: Survey }> {
+    const response = await this.client.get(`/api/v1/surveys/${surveyId}`);
+    return response.data;
+  }
+
+  async deleteSurvey(surveyId: string): Promise<void> {
+    await this.client.delete(`/api/v1/surveys/${surveyId}`);
+  }
+
+  // ============================================================================
+  // QUESTION OPERATIONS
+  // ============================================================================
+
+  async createQuestion(surveyId: string, data: {
+    question_text: string;
+    question_name: string;
+    additional_instruction?: string;
+  }): Promise<{ question: Question }> {
+    const response = await this.client.post(
+      `/api/v1/surveys/${surveyId}/questions`,
+      data
+    );
+    return response.data;
+  }
+
+  async getQuestion(surveyId: string, questionId: string): Promise<{ question: Question }> {
+    const response = await this.client.get(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}`
+    );
+    return response.data;
+  }
+
+  async getQuestions(surveyId: string): Promise<{ questions: Question[] }> {
+    const response = await this.client.get(
+      `/api/v1/surveys/${surveyId}/questions`
+    );
+    return response.data;
+  }
+
+  // ============================================================================
+  // CODE FRAME OPERATIONS
+  // ============================================================================
+
+  async createCodeFrame(surveyId: string, questionId: string, data: {
+    additionalInstruction?: string;
+    tierCount?: number;
+  }): Promise<{ jobId: string; status: string }> {
+    const response = await this.client.post(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/code_frame`,
+      data
+    );
+    return response.data;
+  }
+
+  // ============================================================================
+  // EVALUATION OPERATIONS
+  // ============================================================================
+
+  async createEvaluation(surveyId: string, questionId: string, data: {
+    evaluationName: string;
+    additionalInstructionEvaluation?: string;
+  }): Promise<{ evaluationId: string }> {
+    const response = await this.client.post(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/evaluate`,
+      data
+    );
+    return response.data;
+  }
+
+  async getEvaluation(
+    surveyId: string,
+    questionId: string,
+    evaluationId: string,
+    excludeAnswers = false
+  ): Promise<{ evaluation: Evaluation; evaluatedAnswers?: EvaluatedAnswer[] }> {
+    const url = `/api/v1/surveys/${surveyId}/questions/${questionId}/evaluations/${evaluationId}`;
+    const params = excludeAnswers ? { exclude: 'answers' } : {};
+    const response = await this.client.get(url, { params });
+    return response.data;
+  }
+
+  async deleteEvaluation(surveyId: string, questionId: string, evaluationId: string): Promise<void> {
+    await this.client.delete(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/evaluations/${evaluationId}`
+    );
+  }
+
+  /**
+   * List all evaluations for a question.
+   * Useful for tracking surveys to find existing evaluations to continue.
+   */
+  async listEvaluations(surveyId: string, questionId: string): Promise<{ evaluations: Evaluation[] }> {
+    const response = await this.client.get(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/evaluations`
+    );
+    return response.data;
+  }
+
+  /**
+   * Continue evaluations with newly added answers.
+   * This is the key method for tracking surveys - it processes only unevaluated answers.
+   *
+   * @param surveyId - The survey ID
+   * @param questionId - The question ID
+   * @param evaluationIds - Array of evaluation IDs to continue
+   * @param region - Optional AI inference region ('eu' or 'us')
+   * @returns Results for each evaluation and a summary
+   */
+  async continueEvaluations(
+    surveyId: string,
+    questionId: string,
+    evaluationIds: string[],
+    region?: 'eu' | 'us'
+  ): Promise<{
+    results: Array<{
+      evaluationId: string;
+      success: boolean;
+      jobsQueued?: number;
+      totalAnswers?: number;
+      alreadyEvaluated?: number;
+      isTrackingSurvey?: boolean;
+      error?: string;
+    }>;
+    summary: {
+      total: number;
+      succeeded: number;
+      failed: number;
+      totalJobsQueued: number;
+    };
+  }> {
+    const url = `/api/v1/surveys/${surveyId}/questions/${questionId}/continue-evaluations`;
+    const params = region ? { region } : {};
+    const response = await this.client.post(url, { evaluationIds }, { params });
+    return response.data;
+  }
+
+  // ============================================================================
+  // ANSWER OPERATIONS
+  // ============================================================================
+
+  /**
+   * List all answers for a question.
+   */
+  async listAnswers(surveyId: string, questionId: string): Promise<{ answers: Answer[] }> {
+    const response = await this.client.get(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/answers`
+    );
+    return response.data;
+  }
+
+  /**
+   * Create one or multiple answers for a question.
+   * This is the key method for adding new answers to a tracking survey.
+   *
+   * @param surveyId - The survey ID
+   * @param questionId - The question ID
+   * @param answers - Single answer or array of answers to create
+   * @returns Created answer(s)
+   */
+  async createAnswers(
+    surveyId: string,
+    questionId: string,
+    answers: Answer | Answer[]
+  ): Promise<{ answers?: Answer[]; answer?: Answer; count?: number }> {
+    const response = await this.client.post(
+      `/api/v1/surveys/${surveyId}/questions/${questionId}/answers`,
+      answers
+    );
+    return response.data;
+  }
+
+  // ============================================================================
+  // WEBHOOK OPERATIONS
+  // ============================================================================
+
+  async createWebhook(data: {
+    url: string;
+    name: string;
+    events: string[];
+  }): Promise<{ webhook: Webhook }> {
+    const response = await this.client.post('/api/v1/webhooks', data);
+    return response.data;
+  }
+
+  async listWebhooks(): Promise<{ webhooks: Webhook[] }> {
+    const response = await this.client.get('/api/v1/webhooks');
+    return response.data;
+  }
+
+  async deleteWebhook(webhookId: string): Promise<void> {
+    await this.client.delete(`/api/v1/webhooks/${webhookId}`);
+  }
+}
