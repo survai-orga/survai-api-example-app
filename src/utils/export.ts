@@ -161,7 +161,7 @@ export async function generateReport(data: {
 /**
  * Calculate detailed statistics from evaluated answers
  */
-function calculateStatistics(evaluatedAnswers: any[], codeFrame: any[]): any {
+function calculateStatistics(evaluatedAnswers: any[], _codeFrame: any[]): any {
   const totalAnswers = evaluatedAnswers.length;
   const answersWithCodings = evaluatedAnswers.filter(a => a.codings && a.codings.length > 0);
   const totalCodings = evaluatedAnswers.reduce((sum, a) => sum + (a.codings?.length || 0), 0);

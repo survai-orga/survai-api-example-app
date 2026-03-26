@@ -25,7 +25,7 @@ export async function waitForWebhook(
 
     // Check for event in database
     const event = await db.getLatestWebhookEvent(eventType);
-    if (event && new Date(event.receivedAt).getTime() > startTime) {
+    if (event?.receivedAt && new Date(event.receivedAt).getTime() > startTime) {
       console.log(`  ✓ Webhook received: ${eventType}`);
       return event;
     }
