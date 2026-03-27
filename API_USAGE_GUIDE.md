@@ -1232,6 +1232,6 @@ console.log(`Coded ${results.evaluatedAnswers.length} answers`);
 ---
 
 **Need Help?**
-- Documentation: `./IMPLEMENTATION_PLAN.md`
+- Documentation: `./README.md`
 - Example Code: `./src/`
 - Issues: Contact support team
