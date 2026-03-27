@@ -1,7 +1,11 @@
-import express from 'express';
+import express, { Request } from 'express';
 import { verifySignature } from './signature.js';
 import { handleWebhookEvent } from './handlers.js';
 import { CONFIG } from '../config.js';
+
+interface RawBodyRequest extends Request {
+	rawBody?: string;
+}
 
 export function startWebhookServer(): Promise<void> {
 	return new Promise((resolve) => {
@@ -9,13 +13,13 @@ export function startWebhookServer(): Promise<void> {
 
 		app.use(
 			express.json({
-				verify: (req: any, _res, buf) => {
+				verify: (req: RawBodyRequest, _res, buf) => {
 					req.rawBody = buf.toString('utf8');
 				}
 			})
 		);
 
-		app.post(CONFIG.webhook.path, async (req: any, res): Promise<void> => {
+		app.post(CONFIG.webhook.path, async (req: RawBodyRequest, res): Promise<void> => {
 			const signature = req.headers['x-survai-signature'] as string;
 			const deliveryId = req.headers['x-survai-delivery-id'] as string;
 

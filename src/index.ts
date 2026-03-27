@@ -1,4 +1,5 @@
 import { SurvAIClient } from './api/client.js';
+import type { EvaluatedAnswer, Evaluation, Question, Webhook } from './api/client.js';
 import { startWebhookServer } from './webhook-server/server.js';
 import * as db from './storage/db.js';
 import { sampleAnswers } from './examples/sample-data.js';
@@ -6,6 +7,7 @@ import { waitForWebhook, formatDuration } from './utils/wait.js';
 import { CONFIG, validateConfig } from './config.js';
 import { exportToCSV, generateReport } from './utils/export.js';
 import { displayCodeFrame } from './utils/code-frame.js';
+import type { CodeFrameCreatedEvent } from './types.js';
 
 async function main() {
 	const startTime = Date.now();
@@ -58,7 +60,8 @@ async function main() {
 		console.log();
 
 		console.log('Step 9: Exporting results...');
-		await exportResults(evaluatedAnswers, question, surveyId, evaluation, codeFrameEvent.data.codeFrame);
+		const codeFrame = (codeFrameEvent as CodeFrameCreatedEvent).data.codeFrame;
+		await exportResults(evaluatedAnswers, question, surveyId, evaluation, codeFrame);
 		console.log();
 
 		const duration = Date.now() - startTime;
@@ -78,7 +81,7 @@ async function main() {
 	}
 }
 
-async function registerWebhook(client: SurvAIClient) {
+async function registerWebhook(client: SurvAIClient): Promise<Webhook> {
 	const webhookUrl = `${CONFIG.webhook.baseUrl}${CONFIG.webhook.path}`;
 	console.log(`  URL: ${webhookUrl}`);
 
@@ -112,12 +115,12 @@ async function registerWebhook(client: SurvAIClient) {
 
 	await db.saveWebhook(webhook);
 	await db.saveConfig({ webhookId: webhook.id, webhookSecret: webhook.secret, webhookUrl });
-	(CONFIG.webhook as any).secret = webhook.secret;
+	(CONFIG.webhook as { secret?: string }).secret = webhook.secret;
 
 	return webhook;
 }
 
-async function importSurvey(client: SurvAIClient) {
+async function importSurvey(client: SurvAIClient): Promise<{ surveyId: string; question: Question }> {
 	console.log(`  Total answers: ${sampleAnswers.length}`);
 
 	const importResponse = await client.importSurvey({
@@ -142,7 +145,7 @@ async function importSurvey(client: SurvAIClient) {
 	const questionsResponse = await client.getQuestions(surveyId);
 	const question = questionsResponse.questions[0];
 	await db.saveQuestion(question);
-	await db.saveAnswers(sampleAnswers as any[]);
+	await db.saveAnswers(sampleAnswers);
 
 	return { surveyId, question };
 }
@@ -158,12 +161,13 @@ async function generateCodeFrame(client: SurvAIClient, surveyId: string, questio
 
 	const codeFrameEvent = await waitForWebhook('code_frame.created', 300000);
 	console.log('✓ Code frame created successfully!');
-	displayCodeFrame(codeFrameEvent.data.codeFrame);
+	const codeFrame = (codeFrameEvent as CodeFrameCreatedEvent).data.codeFrame;
+	displayCodeFrame(codeFrame);
 
 	return codeFrameEvent;
 }
 
-async function runEvaluation(client: SurvAIClient, surveyId: string, questionId: string) {
+async function runEvaluation(client: SurvAIClient, surveyId: string, questionId: string): Promise<{ evaluationId: string }> {
 	const evaluationResponse = await client.createEvaluation(surveyId, questionId, {
 		evaluationName: 'Initial Evaluation',
 		additionalInstructionEvaluation: 'Be precise and use the most specific codes available'
@@ -174,9 +178,10 @@ async function runEvaluation(client: SurvAIClient, surveyId: string, questionId:
 	console.log('  Monitoring progress via webhooks...');
 
 	const evalCompleteEvent = await waitForWebhook('evaluation.completed', 600000);
-	console.log(`✓ Evaluation completed: ${evalCompleteEvent.data.processedAnswers}/${evalCompleteEvent.data.totalAnswers} answers`);
+	const { processedAnswers, totalAnswers } = evalCompleteEvent.data as { processedAnswers: number; totalAnswers: number };
+	console.log(`✓ Evaluation completed: ${processedAnswers}/${totalAnswers} answers`);
 
-	return { evaluationId, evalCompleteEvent };
+	return { evaluationId };
 }
 
 async function retrieveResults(
@@ -196,7 +201,7 @@ async function retrieveResults(
 	return { evaluation, evaluatedAnswers };
 }
 
-function analyzeResults(evaluatedAnswers: any[]): void {
+function analyzeResults(evaluatedAnswers: EvaluatedAnswer[]): void {
 	console.log('\nAnalysis Results:');
 	console.log('-'.repeat(70));
 
@@ -234,11 +239,11 @@ function analyzeResults(evaluatedAnswers: any[]): void {
 }
 
 async function exportResults(
-	evaluatedAnswers: any[],
-	question: any,
+	evaluatedAnswers: EvaluatedAnswer[],
+	question: Question,
 	surveyId: string,
-	evaluation: any,
-	codeFrame: any
+	evaluation: Evaluation,
+	codeFrame: CodeFrameCreatedEvent['data']['codeFrame']
 ) {
 	const csvPath = await exportToCSV(evaluatedAnswers, {
 		surveyName: 'Customer Feedback Survey 2025',

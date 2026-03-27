@@ -1,4 +1,5 @@
 import { SurvAIClient } from './api/client.js';
+import type { CodeFrameNode, EvaluatedAnswer } from './api/client.js';
 import { startWebhookServer } from './webhook-server/server.js';
 import * as db from './storage/db.js';
 import {
@@ -8,6 +9,7 @@ import {
   trackingSurveyQuestion,
   trackingSurveyInfo
 } from './examples/tracking-survey-data.js';
+import { countTotalCodes } from './utils/code-frame.js';
 import { waitForWebhook, formatDuration } from './utils/wait.js';
 import { CONFIG, validateConfig } from './config.js';
 import { exportToCSV } from './utils/export.js';
@@ -138,8 +140,9 @@ async function main() {
       throw new Error('Code frame generation timed out');
     }
 
-    console.log(`✓ Code frame created with ${countTotalCodes(codeFrameEvent.data.codeFrame)} categories`);
-    displayCodeFrameSummary(codeFrameEvent.data.codeFrame);
+    const codeFrame = codeFrameEvent.data.codeFrame as CodeFrameNode[];
+    console.log(`✓ Code frame created with ${countTotalCodes(codeFrame)} categories`);
+    displayCodeFrameSummary(codeFrame);
     console.log();
 
     // ========================================================================
@@ -360,23 +363,7 @@ async function main() {
   }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-function countTotalCodes(codeFrame: any[]): number {
-  if (!codeFrame) return 0;
-  let count = 0;
-  for (const node of codeFrame) {
-    count++;
-    if (node.children?.length > 0) {
-      count += countTotalCodes(node.children);
-    }
-  }
-  return count;
-}
-
-function displayCodeFrameSummary(codeFrame: any[]): void {
+function displayCodeFrameSummary(codeFrame: CodeFrameNode[]): void {
   console.log('  Code Frame Structure:');
   for (const node of codeFrame || []) {
     const childCount = node.children?.length || 0;
@@ -384,26 +371,22 @@ function displayCodeFrameSummary(codeFrame: any[]): void {
   }
 }
 
-function displayCodingSummary(evaluatedAnswers: any[]): void {
+function displayCodingSummary(evaluatedAnswers: EvaluatedAnswer[]): void {
   if (!evaluatedAnswers || evaluatedAnswers.length === 0) {
     console.log('  No evaluated answers to summarize');
     return;
   }
 
-  // Count codes by category
   const codeCounts: Record<string, number> = {};
   for (const answer of evaluatedAnswers) {
     if (!answer.codings) continue;
     for (const coding of answer.codings) {
-      const path = coding.code_path || 'Uncoded';
-      const topLevel = path.split(' > ')[0];
+      const topLevel = (coding.code_path || 'Uncoded').split(' > ')[0];
       codeCounts[topLevel] = (codeCounts[topLevel] || 0) + 1;
     }
   }
 
-  // Display summary
-  const sortedCodes = Object.entries(codeCounts)
-    .sort(([, a], [, b]) => b - a);
+  const sortedCodes = Object.entries(codeCounts).sort(([, a], [, b]) => b - a);
 
   console.log('  Coding Summary (by top-level category):');
   for (const [category, count] of sortedCodes) {
@@ -411,10 +394,6 @@ function displayCodingSummary(evaluatedAnswers: any[]): void {
     console.log(`    • ${category}: ${count} (${percentage}%)`);
   }
 }
-
-// ============================================================================
-// RUN MAIN
-// ============================================================================
 
 main().catch((error) => {
   console.error('Fatal error:', error);

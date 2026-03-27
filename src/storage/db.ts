@@ -15,7 +15,7 @@ async function ensureDataDir() {
 	await fs.mkdir(CONFIG.storage.dataDir, { recursive: true }).catch(() => {});
 }
 
-class JsonCollection<T extends { id?: string }> {
+class JsonCollection<T> {
 	private filename: string;
 	private key: string;
 
@@ -45,7 +45,8 @@ class JsonCollection<T extends { id?: string }> {
 
 	async save(item: T): Promise<void> {
 		const items = await this.readAll();
-		const index = item.id ? items.findIndex((i) => i.id === item.id) : -1;
+		const itemId = (item as { id?: string }).id;
+		const index = itemId ? items.findIndex((i) => (i as { id?: string }).id === itemId) : -1;
 
 		if (index !== -1) {
 			items[index] = item;
@@ -64,12 +65,12 @@ class JsonCollection<T extends { id?: string }> {
 
 	async find(id: string): Promise<T | null> {
 		const items = await this.readAll();
-		return items.find((i) => i.id === id) || null;
+		return items.find((i) => (i as { id?: string }).id === id) || null;
 	}
 
 	async update(id: string, updates: Partial<T>): Promise<void> {
 		const items = await this.readAll();
-		const index = items.findIndex((i) => i.id === id);
+		const index = items.findIndex((i) => (i as { id?: string }).id === id);
 		if (index !== -1) {
 			items[index] = { ...items[index], ...updates };
 			await this.writeAll(items);
@@ -93,21 +94,21 @@ interface StoredCodeFrame {
 	created: string;
 }
 
-interface WebhookEvent {
-	id?: string;
+export interface StoredWebhookEvent {
 	event: string;
+	timestamp?: string;
 	data: Record<string, unknown>;
 	receivedAt?: string;
 }
 
 const surveys = new JsonCollection<Survey>('surveys.json', 'surveys');
 const questions = new JsonCollection<Question>('questions.json', 'questions');
-const answers = new JsonCollection<Answer & { id?: string }>('answers.json', 'answers');
+const answers = new JsonCollection<Answer>('answers.json', 'answers');
 const evaluations = new JsonCollection<Evaluation>('evaluations.json', 'evaluations');
 const evaluatedAnswers = new JsonCollection<EvaluatedAnswer>('evaluated-answers.json', 'evaluatedAnswers');
 const webhooks = new JsonCollection<Webhook>('webhooks.json', 'webhooks');
 const codeFrames = new JsonCollection<StoredCodeFrame>('codeframes.json', 'codeFrames');
-const webhookEvents = new JsonCollection<WebhookEvent>('webhook-events.json', 'events');
+const webhookEvents = new JsonCollection<StoredWebhookEvent>('webhook-events.json', 'events');
 
 export async function saveConfig(config: ConfigData): Promise<void> {
 	await ensureDataDir();
@@ -134,7 +135,7 @@ export const getQuestions = () => questions.readAll();
 export const getQuestion = (id: string) => questions.find(id);
 export const updateQuestion = (id: string, updates: Partial<Question>) => questions.update(id, updates);
 
-export const saveAnswers = (a: (Answer & { id?: string })[]) => answers.saveMany(a);
+export const saveAnswers = (a: Answer[]) => answers.saveMany(a);
 export const getAnswers = () => answers.readAll();
 
 export const saveEvaluation = (e: Evaluation) => evaluations.save(e);
@@ -151,13 +152,13 @@ export const getWebhooks = () => webhooks.readAll();
 export const saveCodeFrame = (cf: StoredCodeFrame) => codeFrames.save(cf);
 export const getCodeFrames = () => codeFrames.readAll();
 
-export async function saveWebhookEvent(event: WebhookEvent): Promise<void> {
+export async function saveWebhookEvent(event: StoredWebhookEvent): Promise<void> {
 	await webhookEvents.save({ ...event, receivedAt: new Date().toISOString() });
 }
 
 export const getWebhookEvents = () => webhookEvents.readAll();
 
-export async function getLatestWebhookEvent(eventType: string): Promise<WebhookEvent | null> {
+export async function getLatestWebhookEvent(eventType: string): Promise<StoredWebhookEvent | null> {
 	const events = await getWebhookEvents();
 	const filtered = events.filter((e) => e.event === eventType);
 	return filtered.length > 0 ? filtered[filtered.length - 1] : null;
