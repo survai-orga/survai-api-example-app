@@ -15,38 +15,29 @@ async function ensureDataDir() {
 	await fs.mkdir(CONFIG.storage.dataDir, { recursive: true }).catch(() => {});
 }
 
-class JsonCollection<T> {
-	private filename: string;
-	private key: string;
+function createCollection<T>(filename: string, key: string) {
+	const filepath = path.join(CONFIG.storage.dataDir, filename);
 
-	constructor(filename: string, key: string) {
-		this.filename = filename;
-		this.key = key;
-	}
+	const getId = (item: T) => (item as { id?: string }).id;
 
-	private get filepath() {
-		return path.join(CONFIG.storage.dataDir, this.filename);
-	}
-
-	async readAll(): Promise<T[]> {
+	const readAll = async (): Promise<T[]> => {
 		try {
-			const content = await fs.readFile(this.filepath, 'utf-8');
-			const data = JSON.parse(content);
-			return data[this.key] || [];
+			const data = JSON.parse(await fs.readFile(filepath, 'utf-8'));
+			return data[key] || [];
 		} catch {
 			return [];
 		}
-	}
+	};
 
-	async writeAll(items: T[]): Promise<void> {
+	const writeAll = async (items: T[]): Promise<void> => {
 		await ensureDataDir();
-		await fs.writeFile(this.filepath, JSON.stringify({ [this.key]: items }, null, 2), 'utf-8');
-	}
+		await fs.writeFile(filepath, JSON.stringify({ [key]: items }, null, 2), 'utf-8');
+	};
 
-	async save(item: T): Promise<void> {
-		const items = await this.readAll();
-		const itemId = (item as { id?: string }).id;
-		const index = itemId ? items.findIndex((i) => (i as { id?: string }).id === itemId) : -1;
+	const save = async (item: T): Promise<void> => {
+		const items = await readAll();
+		const itemId = getId(item);
+		const index = itemId ? items.findIndex((i) => getId(i) === itemId) : -1;
 
 		if (index !== -1) {
 			items[index] = item;
@@ -54,28 +45,30 @@ class JsonCollection<T> {
 			items.push(item);
 		}
 
-		await this.writeAll(items);
-	}
+		await writeAll(items);
+	};
 
-	async saveMany(newItems: T[]): Promise<void> {
-		const items = await this.readAll();
+	const saveMany = async (newItems: T[]): Promise<void> => {
+		const items = await readAll();
 		items.push(...newItems);
-		await this.writeAll(items);
-	}
+		await writeAll(items);
+	};
 
-	async find(id: string): Promise<T | null> {
-		const items = await this.readAll();
-		return items.find((i) => (i as { id?: string }).id === id) || null;
-	}
+	const find = async (id: string): Promise<T | null> => {
+		const items = await readAll();
+		return items.find((i) => getId(i) === id) || null;
+	};
 
-	async update(id: string, updates: Partial<T>): Promise<void> {
-		const items = await this.readAll();
-		const index = items.findIndex((i) => (i as { id?: string }).id === id);
+	const update = async (id: string, updates: Partial<T>): Promise<void> => {
+		const items = await readAll();
+		const index = items.findIndex((i) => getId(i) === id);
 		if (index !== -1) {
 			items[index] = { ...items[index], ...updates };
-			await this.writeAll(items);
+			await writeAll(items);
 		}
-	}
+	};
+
+	return { readAll, save, saveMany, find, update };
 }
 
 interface ConfigData {
@@ -101,14 +94,14 @@ export interface StoredWebhookEvent {
 	receivedAt?: string;
 }
 
-const surveys = new JsonCollection<Survey>('surveys.json', 'surveys');
-const questions = new JsonCollection<Question>('questions.json', 'questions');
-const answers = new JsonCollection<Answer>('answers.json', 'answers');
-const evaluations = new JsonCollection<Evaluation>('evaluations.json', 'evaluations');
-const evaluatedAnswers = new JsonCollection<EvaluatedAnswer>('evaluated-answers.json', 'evaluatedAnswers');
-const webhooks = new JsonCollection<Webhook>('webhooks.json', 'webhooks');
-const codeFrames = new JsonCollection<StoredCodeFrame>('codeframes.json', 'codeFrames');
-const webhookEvents = new JsonCollection<StoredWebhookEvent>('webhook-events.json', 'events');
+const surveys = createCollection<Survey>('surveys.json', 'surveys');
+const questions = createCollection<Question>('questions.json', 'questions');
+const answers = createCollection<Answer>('answers.json', 'answers');
+const evaluations = createCollection<Evaluation>('evaluations.json', 'evaluations');
+const evaluatedAnswers = createCollection<EvaluatedAnswer>('evaluated-answers.json', 'evaluatedAnswers');
+const webhooks = createCollection<Webhook>('webhooks.json', 'webhooks');
+const codeFrames = createCollection<StoredCodeFrame>('codeframes.json', 'codeFrames');
+const webhookEvents = createCollection<StoredWebhookEvent>('webhook-events.json', 'events');
 
 export async function saveConfig(config: ConfigData): Promise<void> {
 	await ensureDataDir();
