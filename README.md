@@ -81,7 +81,7 @@ src/
 ├── config.ts                  # Environment config + validation
 ├── index.ts                   # Main workflow orchestration
 ├── tracking-survey.ts         # Tracking survey example
-├── storage/db.ts              # JSON file storage (generic JsonCollection<T>)
+├── storage/db.ts              # JSON file storage (createCollection<T> factory)
 ├── utils/
 │   ├── code-frame.ts          # Code frame display + counting utilities
 │   ├── export.ts              # CSV + JSON report generation

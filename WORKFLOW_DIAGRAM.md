@@ -123,7 +123,7 @@ src/
 │   ├─ retrieveResults()
 │   ├─ analyzeResults()
 │   └─ exportResults()
-├─ storage/db.ts ─────── JsonCollection<T> generic storage
+├─ storage/db.ts ─────── createCollection<T> factory storage
 ├─ utils/
 │   ├─ code-frame.ts ─── countTotalCodes(), displayCodeFrame()
 │   ├─ export.ts ──────── CSV + JSON report generation
