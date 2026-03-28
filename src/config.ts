@@ -6,7 +6,6 @@ export const CONFIG = {
 	api: {
 		baseUrl: process.env.SURVAI_API_BASE_URL || 'http://localhost:5173',
 		apiKey: process.env.SURVAI_API_KEY,
-		firebaseToken: process.env.SURVAI_FIREBASE_TOKEN,
 		timeout: 30000,
 		retryAttempts: 3,
 		retryDelay: 1000
@@ -34,8 +33,8 @@ export const CONFIG = {
 export function validateConfig() {
 	const errors: string[] = [];
 
-	if (!CONFIG.api.apiKey && !CONFIG.api.firebaseToken) {
-		errors.push('Either SURVAI_API_KEY or SURVAI_FIREBASE_TOKEN must be set');
+	if (!CONFIG.api.apiKey) {
+		errors.push('SURVAI_API_KEY must be set');
 	}
 
 	if (!CONFIG.webhook.baseUrl) {

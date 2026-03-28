@@ -24,14 +24,10 @@ Long-running AI operations (code frame generation, evaluations) use webhooks for
 
 ## Authentication
 
-All requests require one of:
+All requests require an API key:
 
 ```typescript
-// API Key (production) — format: survai_k_<40 chars>
 headers: { 'X-API-Key': 'survai_k_your_key_here' }
-
-// Firebase Token (development)
-headers: { 'Authorization': 'Bearer your_firebase_token' }
 ```
 
 Create API keys via SurvAI web interface: **Profile → API Keys → Create New API Key**.

@@ -22,7 +22,7 @@ See [WORKFLOW_DIAGRAM.md](./WORKFLOW_DIAGRAM.md) for visual representation.
 ### Prerequisites
 
 - Node.js 18+
-- A SurvAI API key or Firebase token
+- A SurvAI API key
 - [ngrok](https://ngrok.com) for webhook tunneling (local dev)
 
 ### Setup
@@ -40,13 +40,10 @@ cp .env.example .env
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SURVAI_API_KEY` | Yes* | API key for authentication |
-| `SURVAI_FIREBASE_TOKEN` | Yes* | Alternative: Firebase auth token |
+| `SURVAI_API_KEY` | Yes | API key for authentication |
 | `SURVAI_API_BASE_URL` | No | API base URL (default: `http://localhost:5173`) |
 | `WEBHOOK_BASE_URL` | Yes | Public URL for webhooks (e.g. ngrok URL) |
 | `WEBHOOK_PORT` | No | Webhook server port (default: `3000`) |
-
-\* Either `SURVAI_API_KEY` or `SURVAI_FIREBASE_TOKEN` must be set.
 
 ### Webhook Setup (ngrok)
 
@@ -98,11 +95,7 @@ src/
 ## Authentication
 
 ```typescript
-// API Key (production)
 headers: { 'X-API-Key': 'survai_k_your_key_here' }
-
-// Firebase Token (development)
-headers: { 'Authorization': 'Bearer your_firebase_token' }
 ```
 
 ## Scripts

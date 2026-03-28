@@ -71,8 +71,7 @@ export class SurvAIClient {
 			timeout: CONFIG.api.timeout,
 			headers: {
 				'Content-Type': 'application/json',
-				...(apiKey || CONFIG.api.apiKey ? { 'X-API-Key': apiKey || CONFIG.api.apiKey } : {}),
-				...(CONFIG.api.firebaseToken ? { Authorization: `Bearer ${CONFIG.api.firebaseToken}` } : {})
+				'X-API-Key': apiKey || CONFIG.api.apiKey || ''
 			}
 		});
 
