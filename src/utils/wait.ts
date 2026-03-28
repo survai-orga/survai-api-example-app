@@ -7,10 +7,10 @@ export async function waitForWebhook(
   timeoutMs: number = 600_000,
 ) {
   const startTime = Date.now();
-  const pollInterval = 1000;
+  const pollInterval = 1_000;
 
   console.log(
-    `  Waiting for webhook: ${eventType} (timeout: ${timeoutMs / 1000}s)`,
+    `  Waiting for webhook: ${eventType} (timeout: ${timeoutMs / 1_000}s)`,
   );
 
   while (true) {
@@ -38,7 +38,7 @@ export async function pollForEvaluation(
   const intervalMs = CONFIG.polling.intervalMs;
 
   console.log(
-    `  Polling for evaluation completion (checking every ${intervalMs / 1000}s)`,
+    `  Polling for evaluation completion (checking every ${intervalMs / 1_000}s)`,
   );
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -81,7 +81,7 @@ export async function pollForEvaluation(
   }
 
   throw new Error(
-    `Evaluation did not complete within ${(maxAttempts * intervalMs) / 1000}s`,
+    `Evaluation did not complete within ${(maxAttempts * intervalMs) / 1_000}s`,
   );
 }
 
@@ -94,7 +94,7 @@ export async function pollForCodeFrame(
   const intervalMs = CONFIG.polling.intervalMs;
 
   console.log(
-    `  Polling for code frame creation (checking every ${intervalMs / 1000}s)`,
+    `  Polling for code frame creation (checking every ${intervalMs / 1_000}s)`,
   );
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -118,19 +118,19 @@ export async function pollForCodeFrame(
   }
 
   throw new Error(
-    `Code frame did not complete within ${(maxAttempts * intervalMs) / 1000}s`,
+    `Code frame did not complete within ${(maxAttempts * intervalMs) / 1_000}s`,
   );
 }
 
 export async function waitFor(
   condition: () => Promise<boolean>,
   timeoutMs: number = 600000,
-  intervalMs: number = 5000,
+  intervalMs: number = 5_000,
   description: string = "condition",
 ): Promise<void> {
   const startTime = Date.now();
 
-  console.log(`  Waiting for ${description} (timeout: ${timeoutMs / 1000}s)`);
+  console.log(`  Waiting for ${description} (timeout: ${timeoutMs / 1_000}s)`);
 
   while (true) {
     if (Date.now() - startTime > timeoutMs) {
@@ -151,7 +151,7 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
+  const seconds = Math.floor(ms / 1_000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
 

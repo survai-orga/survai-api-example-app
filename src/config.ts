@@ -6,9 +6,9 @@ export const CONFIG = {
   api: {
     baseUrl: process.env.SURVAI_API_BASE_URL || "https://app.surv-ai.com",
     apiKey: process.env.SURVAI_API_KEY,
-    timeout: 30000,
+    timeout: 30_000,
     retryAttempts: 3,
-    retryDelay: 1000,
+    retryDelay: 1_000,
   },
   webhook: {
     port: parseInt(process.env.WEBHOOK_PORT || "3000"),
@@ -17,9 +17,9 @@ export const CONFIG = {
     path: "/webhooks/survai",
   },
   polling: {
-    intervalMs: 5000,
+    intervalMs: 5_000,
     maxAttempts: 360,
-    timeoutMs: 1800000,
+    timeoutMs: 1_800_000,
   },
   storage: {
     dataDir: process.env.DATA_DIR || "./data",

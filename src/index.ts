@@ -139,7 +139,7 @@ async function main() {
     console.log(`  Job queued: ${codeFrameJob.jobId}`);
     console.log("  Waiting for code frame generation...");
 
-    const codeFrameEvent = await waitForWebhook("code_frame.created", 180000);
+    const codeFrameEvent = await waitForWebhook("code_frame.created", 180_000);
 
     if (!codeFrameEvent) {
       throw new Error("Code frame generation timed out");
@@ -169,7 +169,7 @@ async function main() {
 
     const evalCompleteEvent = await waitForWebhook(
       "evaluation.completed",
-      300000,
+      300_000,
     );
 
     if (!evalCompleteEvent) {
@@ -245,7 +245,7 @@ async function main() {
 
       const wave2EvalComplete = await waitForWebhook(
         "evaluation.completed",
-        300000,
+        300_000,
       );
 
       if (!wave2EvalComplete) {
@@ -291,7 +291,7 @@ async function main() {
 
       const wave3EvalComplete = await waitForWebhook(
         "evaluation.completed",
-        300000,
+        300_000,
       );
 
       if (!wave3EvalComplete) {
