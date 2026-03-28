@@ -92,6 +92,12 @@ async function main() {
     const webhook = webhookResponse.webhook;
     webhookId = webhook.id;
     console.log(`✓ Webhook registered: ${webhook.id}`);
+
+    if (webhook.secret) {
+      (CONFIG.webhook as { secret: string | undefined }).secret = webhook.secret;
+      console.log(`✓ Webhook secret captured from creation response`);
+    }
+
     await db.saveWebhook(webhook);
     console.log();
 
