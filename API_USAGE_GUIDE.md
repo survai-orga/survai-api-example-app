@@ -17,7 +17,7 @@ Complete guide for integrating with the SurvAI API for AI-powered survey analysi
 The SurvAI API provides programmatic access to AI-powered survey analysis:
 
 ```
-Import survey → Generate code frame (GPT-5) → Evaluate answers (GPT-4o) → Export results
+Import survey → Generate code frame → Evaluate answers → Export results
 ```
 
 Long-running AI operations (code frame generation, evaluations) use webhooks for real-time progress updates.
@@ -88,7 +88,7 @@ const { surveyId } = await client.importSurvey({
 
 Alternatively, use the step-by-step approach: `createSurvey` → `createQuestion` → `createAnswers`.
 
-### 4. Generate Code Frame (GPT-5)
+### 4. Generate Code Frame
 
 ```typescript
 const questions = await client.getQuestions(surveyId);
@@ -113,7 +113,7 @@ The AI analyzes all answers and creates a hierarchical categorization structure:
    2.2 Search & Navigation
 ```
 
-### 5. Run Evaluation (GPT-4o)
+### 5. Run Evaluation
 
 ```typescript
 const { evaluationId } = await client.createEvaluation(surveyId, questionId, {

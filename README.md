@@ -6,8 +6,8 @@ Example application demonstrating complete SurvAI API integration — from surve
 
 1. **Register Webhook** → receive real-time notifications for async AI operations
 2. **Import Survey** → bulk upload questions and answers
-3. **Generate Code Frame** → AI creates hierarchical categorization (GPT-5)
-4. **Run Evaluation** → AI categorizes all answers against the code frame (GPT-4o)
+3. **Generate Code Frame** → AI creates hierarchical categorization
+4. **Run Evaluation** → AI categorizes all answers against the code frame
 5. **Retrieve & Export** → download results as CSV/JSON report
 
 See [WORKFLOW_DIAGRAM.md](./WORKFLOW_DIAGRAM.md) for visual representation.

@@ -14,13 +14,13 @@
        │ 2. Import Survey + Questions + Answers       │
        ├─────────────────────────────────────────────►│
        │                                               │
-       │ 3. Generate Code Frame (GPT-5)               │  ┌──────────────┐
+       │ 3. Generate Code Frame               │  ┌──────────────┐
        ├─────────────────────────────────────────────►│  │   SurvAI     │
        │                                               │  │   Backend    │
        │◄─────────────────────────────────────────────┤  │   + AI       │
        │   Webhook: code_frame.created                │  └──────────────┘
        │                                               │
-       │ 4. Start Evaluation (GPT-4o)                 │
+       │ 4. Start Evaluation                 │
        ├─────────────────────────────────────────────►│
        │                                               │
        │◄── Webhook: evaluation.started ──────────────┤
@@ -43,7 +43,7 @@
 ┌─────────┐     ┌──────────┐     ┌───────────┐     ┌──────────┐
 │  Import  │────►│ Code     │────►│ Evaluate  │────►│ Results  │
 │  Survey  │     │ Frame    │     │ Answers   │     │ & Export │
-│          │     │ (GPT-5)  │     │ (GPT-4o)  │     │          │
+│          │     │  │     │  │     │          │
 └─────────┘     └──────────┘     └───────────┘     └──────────┘
   50 answers      5-8 categories   50 coded          CSV/JSON
   1 question      2-tier hierarchy answers            reports
@@ -84,12 +84,12 @@ Time ─────────────────────────
 
   POST /code_frame       code_frame.created
   ─────────►             ◄─────────
-       │    GPT-5 (2-5m)      │
+       │    AI (2-5m)      │
        └─────────────────────┘
 
   POST /evaluate         eval.started    eval.progress    eval.completed
   ─────────►             ◄──────────     ◄──────────      ◄──────────
-       │    GPT-4o (5-30m)    │              │                  │
+       │    AI (5-30m)    │              │                  │
        └──────────────────────┴──────────────┴──────────────────┘
 ```
 

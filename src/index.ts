@@ -41,11 +41,11 @@ async function main() {
 		const { surveyId, question } = await importSurvey(client);
 		console.log();
 
-		console.log('Step 6: Generating code frame with GPT-5...');
+		console.log('Step 6: Generating code frame with AI...');
 		const codeFrameEvent = await generateCodeFrame(client, surveyId, question.id);
 		console.log();
 
-		console.log('Step 7: Running evaluation with GPT-4o...');
+		console.log('Step 7: Running evaluation with AI...');
 		const { evaluationId } = await runEvaluation(client, surveyId, question.id);
 		console.log();
 
