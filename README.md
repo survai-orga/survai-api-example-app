@@ -38,12 +38,11 @@ cp .env.example .env
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SURVAI_API_KEY` | Yes | API key for authentication |
-| `SURVAI_API_BASE_URL` | No | API base URL (default: `http://localhost:5173`) |
-| `WEBHOOK_BASE_URL` | Yes | Public URL for webhooks (e.g. ngrok URL) |
-| `WEBHOOK_PORT` | No | Webhook server port (default: `3000`) |
+| Variable           | Required | Description                                                                                          |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `SURVAI_API_KEY`   | Yes      | API key for authentication (go to your [profile](https://app.surv-ai.com/profile) to create a token) |
+| `WEBHOOK_BASE_URL` | Yes      | Public URL for webhooks (e.g. ngrok URL)                                                             |
+| `WEBHOOK_PORT`     | No       | Webhook server port (default: `3000`)                                                                |
 
 ### Webhook Setup (ngrok)
 
@@ -74,21 +73,21 @@ npm run webhook
 
 ```
 src/
-├── api/client.ts              # SurvAI API client (typed, with logging)
-├── config.ts                  # Environment config + validation
-├── index.ts                   # Main workflow orchestration
-├── tracking-survey.ts         # Tracking survey example
-├── storage/db.ts              # JSON file storage (createCollection<T> factory)
+├── api/client.ts               # SurvAI API client (typed, with logging)
+├── config.ts                   # Environment config + validation
+├── index.ts                    # Main workflow orchestration
+├── tracking-survey.ts          # Tracking survey example
+├── storage/db.ts               # JSON file storage (createCollection<T> factory)
 ├── utils/
-│   ├── code-frame.ts          # Code frame display + counting utilities
-│   ├── export.ts              # CSV + JSON report generation
-│   └── wait.ts                # Webhook event polling
+│   ├── code-frame.ts           # Code frame display + counting utilities
+│   ├── export.ts               # CSV + JSON report generation
+│   └── wait.ts                 # Webhook event polling
 ├── webhook-server/
-│   ├── server.ts              # Express webhook receiver
-│   ├── handlers.ts            # Event handlers (code_frame, evaluation)
-│   └── signature.ts           # HMAC SHA-256 signature verification
+│   ├── server.ts               # Express webhook receiver
+│   ├── handlers.ts             # Event handlers (code_frame, evaluation)
+│   └── signature.ts            # HMAC SHA-256 signature verification
 └── examples/
-    ├── sample-data.ts         # Sample survey answers
+    ├── sample-data.ts          # Sample survey answers
     └── tracking-survey-data.ts # Tracking survey sample data
 ```
 
@@ -100,12 +99,12 @@ headers: { 'X-API-Key': 'survai_k_your_key_here' }
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Run full workflow |
-| `npm run tracking` | Run tracking survey example |
-| `npm run webhook` | Start webhook server only |
-| `npm run build` | Compile TypeScript |
-| `npm test` | Run tests |
-| `npm run type-check` | TypeScript type checking |
-| `npm run clean` | Remove build artifacts and data files |
+| Command              | Description                           |
+| -------------------- | ------------------------------------- |
+| `npm run dev`        | Run full workflow                     |
+| `npm run tracking`   | Run tracking survey example           |
+| `npm run webhook`    | Start webhook server only             |
+| `npm run build`      | Compile TypeScript                    |
+| `npm test`           | Run tests                             |
+| `npm run type-check` | TypeScript type checking              |
+| `npm run clean`      | Remove build artifacts and data files |

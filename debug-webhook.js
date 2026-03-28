@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.SURVAI_API_BASE_URL || 'http://localhost:5173';
+const API_BASE_URL = process.env.SURVAI_API_BASE_URL || 'https://app.surv-ai.com';
 const API_KEY = process.env.SURVAI_API_KEY;
 
 async function testWebhookCreation() {

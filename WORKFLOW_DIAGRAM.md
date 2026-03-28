@@ -10,27 +10,27 @@
        │
        │ 1. Register Webhook
        ├─────────────────────────────────────────────►
-       │                                               │
+       │                                              │
        │ 2. Import Survey + Questions + Answers       │
        ├─────────────────────────────────────────────►│
-       │                                               │
-       │ 3. Generate Code Frame               │  ┌──────────────┐
+       │                                              │
+       │ 3. Generate Code Frame                       │  ┌──────────────┐
        ├─────────────────────────────────────────────►│  │   SurvAI     │
-       │                                               │  │   Backend    │
+       │                                              │  │   Backend    │
        │◄─────────────────────────────────────────────┤  │   + AI       │
        │   Webhook: code_frame.created                │  └──────────────┘
-       │                                               │
-       │ 4. Start Evaluation                 │
+       │                                              │
+       │ 4. Start Evaluation                          │
        ├─────────────────────────────────────────────►│
-       │                                               │
+       │                                              │
        │◄── Webhook: evaluation.started ──────────────┤
        │◄── Webhook: evaluation.progress ─────────────┤
        │◄── Webhook: evaluation.completed ────────────┤
-       │                                               │
+       │                                              │
        │ 5. Retrieve Results                          │
        ├─────────────────────────────────────────────►│
        │◄── Evaluated Answers with Codes ─────────────┤
-       │                                               │
+       │                                              │
 ┌──────┴───────┐
 │  Analyze &   │
 │   Export     │
@@ -41,9 +41,9 @@
 
 ```
 ┌─────────┐     ┌──────────┐     ┌───────────┐     ┌──────────┐
-│  Import  │────►│ Code     │────►│ Evaluate  │────►│ Results  │
-│  Survey  │     │ Frame    │     │ Answers   │     │ & Export │
-│          │     │  │     │  │     │          │
+│  Import │────►│ Code     │────►│ Evaluate  │────►│ Results  │
+│  Survey │     │ Frame    │     │ Answers   │     │ & Export │
+│         │     │          │     │           │     │          │
 └─────────┘     └──────────┘     └───────────┘     └──────────┘
   50 answers      5-8 categories   50 coded          CSV/JSON
   1 question      2-tier hierarchy answers            reports
@@ -84,13 +84,13 @@ Time ─────────────────────────
 
   POST /code_frame       code_frame.created
   ─────────►             ◄─────────
-       │    AI (2-5m)      │
-       └─────────────────────┘
+       │    AI (2-5m)     │
+       └──────────────────┘
 
   POST /evaluate         eval.started    eval.progress    eval.completed
   ─────────►             ◄──────────     ◄──────────      ◄──────────
-       │    AI (5-30m)    │              │                  │
-       └──────────────────────┴──────────────┴──────────────────┘
+       │    AI (5-30m)    │               │                │
+       └──────────────────┴───────────────┴────────────────┘
 ```
 
 ## Tracking Survey Flow
