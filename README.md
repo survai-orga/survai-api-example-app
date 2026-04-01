@@ -1,87 +1,110 @@
-# survai-api-usage
+# SurvAI API Example
 
-Example application demonstrating complete SurvAI API integration with AI-powered survey analysis.
+Example application demonstrating complete SurvAI API integration — from survey import to AI-powered evaluation and export.
 
-## 📚 Documentation
+## Workflow
 
-- **[API Usage Guide](./API_USAGE_GUIDE.md)** - Comprehensive step-by-step guide with code examples
-- **[Workflow Diagram](./WORKFLOW_DIAGRAM.md)** - Visual representation of the complete workflow
-- **[Quick Reference](./QUICK_REFERENCE.md)** - One-page reference for common operations
-- **[Implementation Plan](./IMPLEMENTATION_PLAN.md)** - Technical implementation details
-- **[Setup Instructions](./SETUP.md)** - Development environment setup
+1. **Register Webhook** → receive real-time notifications for async AI operations
+2. **Import Survey** → bulk upload questions and answers
+3. **Generate Code Frame** → AI creates hierarchical categorization
+4. **Run Evaluation** → AI categorizes all answers against the code frame
+5. **Retrieve & Export** → download results as CSV/JSON report
 
-## Overview
+See [WORKFLOW_DIAGRAM.md](./WORKFLOW_DIAGRAM.md) for visual representation.
 
-This application demonstrates the complete SurvAI API workflow:
+## Documentation
 
-1. **Register Webhook** - Receive real-time notifications for long-running AI operations
-2. **Import Survey** - Bulk upload survey with questions and answers
-3. **Generate Code Frame** - AI creates hierarchical categorization structure (GPT-5)
-4. **Run Evaluation** - AI categorizes all answers using the code frame (GPT-4o)
-5. **Retrieve Results** - Get coded answers with evidence (textbits)
-6. **Analyze & Export** - Calculate statistics and export to CSV/JSON
+- **[API Usage Guide](./API_USAGE_GUIDE.md)** — comprehensive endpoint reference with code examples
+- **[Workflow Diagram](./WORKFLOW_DIAGRAM.md)** — visual representation of the complete flow
 
 ## Quick Start
 
+### Prerequisites
+
+- Node.js 18+
+- A SurvAI API key
+- [ngrok](https://ngrok.com) for webhook tunneling (local dev)
+
+### Setup
+
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Configure environment
+# Configure environment
 cp .env.example .env
 # Edit .env with your API key and webhook URL
+```
 
-# 3. Start ngrok (for local webhooks)
+### Environment Variables
+
+| Variable           | Required | Description                                                                                          |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `SURVAI_API_KEY`   | Yes      | API key for authentication (go to your [profile](https://app.surv-ai.com/profile) to create a token) |
+| `WEBHOOK_BASE_URL` | Yes      | Public URL for webhooks (e.g. ngrok URL)                                                             |
+| `WEBHOOK_PORT`     | No       | Webhook server port (default: `3000`)                                                                |
+
+### Webhook Setup (ngrok)
+
+```bash
+# 1. Sign up at https://dashboard.ngrok.com/signup and get your auth token
+ngrok config add-authtoken YOUR_TOKEN
+
+# 2. Start tunnel
 ngrok http 3000
 
-# 4. Run the example
-npm run dev
+# 3. Copy the https URL to WEBHOOK_BASE_URL in .env
 ```
 
-## Features
+### Run
 
-✅ Complete API integration example
-✅ Webhook server with signature verification
-✅ Real-time progress monitoring
-✅ Bulk import of survey data
-✅ AI code frame generation (GPT-5)
-✅ AI answer evaluation (GPT-4o)
-✅ **Tracking Surveys** - Continuous answer collection with incremental evaluation
-✅ Results analysis and statistics
-✅ CSV and JSON export
-✅ Error handling and retry logic
-✅ TypeScript throughout
-
-## Examples
-
-### Standard Workflow
-Run the complete one-time survey analysis:
 ```bash
+# Full workflow (import → code frame → evaluation → export)
 npm run dev
-```
 
-### Tracking Survey Workflow
-Demonstrates continuous answer collection with incremental evaluation:
-```bash
+# Tracking survey mode (add answers to existing survey, re-evaluate)
 npm run tracking
+
+# Webhook server only
+npm run webhook
 ```
 
-The tracking survey example shows how to:
-1. Create a survey with initial answers (Wave 1)
-2. Generate code frame and run initial evaluation
-3. Add new answers later (Wave 2)
-4. Continue evaluation to process only new answers
-5. Repeat for Wave 3
-6. View aggregated results
+## Project Structure
 
-**Key APIs for Tracking Surveys:**
-- `createAnswers()` - Add new answers to existing questions
-- `continueEvaluations()` - Resume evaluation to code only unevaluated answers
-- `listEvaluations()` - View all evaluations for a question
-- `listAnswers()` - View all answers for a question
+```
+src/
+├── api/client.ts               # SurvAI API client (typed, with logging)
+├── config.ts                   # Environment config + validation
+├── index.ts                    # Main workflow orchestration
+├── tracking-survey.ts          # Tracking survey example
+├── storage/db.ts               # JSON file storage (createCollection<T> factory)
+├── utils/
+│   ├── code-frame.ts           # Code frame display + counting utilities
+│   ├── export.ts               # CSV + JSON report generation
+│   └── wait.ts                 # Webhook event polling
+├── webhook-server/
+│   ├── server.ts               # Express webhook receiver
+│   ├── handlers.ts             # Event handlers (code_frame, evaluation)
+│   └── signature.ts            # HMAC SHA-256 signature verification
+└── examples/
+    ├── sample-data.ts          # Sample survey answers
+    └── tracking-survey-data.ts # Tracking survey sample data
+```
 
-This pattern is ideal for:
-- Daily/weekly feedback collection
-- Longitudinal research studies
-- Live event feedback
-- Multi-wave research projects
+## Authentication
+
+```typescript
+headers: { 'X-API-Key': 'survai_k_your_key_here' }
+```
+
+## Scripts
+
+| Command              | Description                           |
+| -------------------- | ------------------------------------- |
+| `npm run dev`        | Run full workflow                     |
+| `npm run tracking`   | Run tracking survey example           |
+| `npm run webhook`    | Start webhook server only             |
+| `npm run build`      | Compile TypeScript                    |
+| `npm test`           | Run tests                             |
+| `npm run type-check` | TypeScript type checking              |
+| `npm run clean`      | Remove build artifacts and data files |
